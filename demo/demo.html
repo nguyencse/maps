@@ -1,0 +1,128 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Demo Marker Clustering</title>
+
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 10px 20px 20px;
+        font-family: Arial;
+        font-size: 16px;
+      }
+
+      h3{
+        text-align: center;
+      }
+
+      #map-container {
+        border-width: 1px;
+        border-style: solid;
+        border-color: #ccc #ccc #999 #ccc;
+        -webkit-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+        -moz-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+        box-shadow: rgba(64, 64, 64, 0.1) 0 2px 5px;
+        width: 800px;
+        margin: 0px auto;
+      }
+
+      #map {
+        width: 800;
+        height: 400px;
+      }
+
+      #rectangle {
+        width: 150px;
+        height: 100px;
+        background: red;
+      }
+    </style>
+
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js"></script>
+    <script type="text/javascript" src="../src/data.json"></script>
+    <script type="text/javascript" src="../src/markerclusterer.js"></script>
+
+    <script type="text/javascript">
+      var clusterStyles = [
+      {
+        textColor: 'red',
+        url: '../images/circle-s.png',
+        height: 30,
+        width: 30
+      },
+      {
+        textColor: 'red',
+        url: '../images/circle-m.png',
+        height: 45,
+        width: 45
+      },
+      {
+        textColor: 'red',
+        url: '../images/circle-l.png',
+        height: 60,
+        width: 60
+      }];
+
+      var url = new URL(window.location.href);
+      var param = url.searchParams.get("q");
+
+      function initialize() {
+        var center = new google.maps.LatLng(37.4419, -122.1419);
+
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 3,
+          center: center,
+          scrollwheel: false,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        var imageUrl = '../images/icon-now-location.png';
+        var markerImage = new google.maps.MarkerImage(imageUrl);
+        var randTitle = ['abc', 'def', 'ghi', '12'];
+
+        var markers = [];
+        for (var i = 0; i < 1000; i++) {
+          var dataPhoto = data.photos[i];
+          var key = randTitle[Math.floor((Math.random() * 4))];
+
+          if(!param || dataPhoto.photo_title.toLowerCase().indexOf(param.toLowerCase()) !== -1){
+            var latLng = new google.maps.LatLng(dataPhoto.latitude, dataPhoto.longitude);
+
+            var marker = new google.maps.Marker({
+              position: latLng,
+              draggable: true,
+              icon: markerImage,
+              label: key + '_' + i
+            });
+
+            var customDialog = dataPhoto.photo_title + '<hr /><div class="rectangle"></div>'
+
+            marker['infowindow'] = new google.maps.InfoWindow({
+              content: dataPhoto.photo_title
+            });
+
+            marker.addListener('click', function() {
+              this['infowindow'].open(map, this);
+            });
+
+            markers.push(marker);
+          }
+        }
+
+        var mcOptions = {
+          gridSize: 50,
+          styles: clusterStyles,
+          maxZoom: 15
+        };
+
+        var markerCluster = new MarkerClusterer(map, markers, mcOptions);
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+    <h3>A simple example of MarkerClusterer (1000 markers)</h3>
+    <div id="map-container"><div id="map"></div></div>
+  </body>
+</html>
